@@ -1,0 +1,45 @@
+services:
+  database:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: zulipchat
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d zulipchat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./Backend
+    environment:
+      - ConnectionStrings__Default=Host=database;Database=zulipchat;Username=admin;Password=password123
+      - ZULIP_BASE_URL=https://bilgisayarkavramlari.zulipchat.com
+      - TOKEN_ENC_KEY=c8f737cd98fbccda6dfba25ebcf01cd2
+      - JWT_SIGNING_KEY=eLHLe9vpf3tghQKKGNdlu6l3Rjh5zPXuGPidsUxN92s=
+      - APP_INVITE_CODE=welcome2026
+      - JWT_ISSUER=zulip-mini-ui
+      - JWT_AUDIENCE=zulip-mini-ui
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "5070:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      - VITE_API_BASE_URL=/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

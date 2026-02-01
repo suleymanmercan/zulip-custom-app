@@ -1,0 +1,85 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Her Pazartesi saat 09:00'da çalış
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # ============================================
+  # Update .NET Dependencies
+  # ============================================
+  update-dotnet:
+    name: Update .NET Packages
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: List outdated packages
+      run: |
+        cd Backend
+        dotnet list package --outdated
+    
+    - name: Update packages
+      run: |
+        cd Backend
+        dotnet outdated -u
+      continue-on-error: true
+
+  # ============================================
+  # Update NPM Dependencies
+  # ============================================
+  update-npm:
+    name: Update NPM Packages
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Check for updates
+      run: |
+        cd frontend
+        npx npm-check-updates
+    
+    - name: Update dependencies
+      run: |
+        cd frontend
+        npx npm-check-updates -u
+        npm install
+      continue-on-error: true
+
+  # ============================================
+  # Dependabot Auto-merge
+  # ============================================
+  dependabot-auto-merge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    
+    steps:
+    - name: Dependabot metadata
+      id: metadata
+      uses: dependabot/fetch-metadata@v2
+      with:
+        github-token: "${{ secrets.GITHUB_TOKEN }}"
+    
+    - name: Enable auto-merge for Dependabot PRs
+      if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+      run: gh pr merge --auto --merge "$PR_URL"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

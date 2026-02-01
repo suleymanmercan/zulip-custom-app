@@ -1,0 +1,62 @@
+@Backend_HostAddress = http://localhost:5070
+@Token = REPLACE_WITH_JWT
+
+### Register
+POST {{Backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "inviteCode": "REPLACE_WITH_INVITE",
+  "email": "user@example.com",
+  "password": "password123",
+  "zulipEmail": "user@company.com",
+  "zulipToken": "ZULIP_API_KEY"
+}
+
+### Login
+POST {{Backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+### Refresh
+POST {{Backend_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "REPLACE_WITH_REFRESH"
+}
+
+### Me
+GET {{Backend_HostAddress}}/api/auth/me
+Authorization: Bearer {{Token}}
+
+### Streams
+GET {{Backend_HostAddress}}/api/streams
+Authorization: Bearer {{Token}}
+
+### Topics
+GET {{Backend_HostAddress}}/api/streams/1/topics
+Authorization: Bearer {{Token}}
+
+### Messages
+GET {{Backend_HostAddress}}/api/messages?streamId=1&topic=deploy&anchor=latest&numBefore=50&numAfter=0
+Authorization: Bearer {{Token}}
+
+### Send message
+POST {{Backend_HostAddress}}/api/messages
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "streamId": 1,
+  "topic": "deploy",
+  "content": "Merhaba!"
+}
+
+### SSE
+GET {{Backend_HostAddress}}/api/events/stream
+Authorization: Bearer {{Token}}

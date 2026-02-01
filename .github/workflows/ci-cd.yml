@@ -41,7 +41,7 @@ jobs:
       run: dotnet publish --configuration Release --no-build --output ./publish
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: backend-build
         path: ./Backend/publish
@@ -86,7 +86,7 @@ jobs:
         NODE_ENV: production
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: frontend-build
         path: ./frontend/dist
